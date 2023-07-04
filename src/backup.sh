@@ -19,13 +19,8 @@ if [ -z "$S3_BUCKET" ]; then
 fi
 
 if [ -z "$POSTGRES_HOST" ]; then
-  if [ -n "$POSTGRES_PORT_5432_TCP_ADDR" ]; then
-    POSTGRES_HOST=$POSTGRES_PORT_5432_TCP_ADDR
-    POSTGRES_PORT=$POSTGRES_PORT_5432_TCP_PORT
-  else
-    echo "You need to set the POSTGRES_HOST environment variable."
-    exit 1
-  fi
+  echo "You need to set the POSTGRES_HOST environment variable."
+  exit 1
 fi
 
 if [ -z "$POSTGRES_USER" ]; then
@@ -50,7 +45,15 @@ export AWS_SECRET_ACCESS_KEY=$S3_SECRET_ACCESS_KEY
 export AWS_DEFAULT_REGION=$S3_REGION
 export PGPASSWORD=$POSTGRES_PASSWORD
 
-if [ -z "$POSTGRES_DATABASE"]; then
+if [ -z "$POSTGRES_DATABASE" ]; then
+  echo "Creating backup of all databases..."
+  pg_dumpall -h $POSTGRES_HOST \
+        -p $POSTGRES_PORT \
+        -U $POSTGRES_USER \
+        $PGDUMP_EXTRA_OPTS \
+        > db.dump
+  s3_uri_base="s3://${S3_BUCKET}/${S3_PREFIX}/${timestamp}.dump"
+else
   echo "Creating backup of $POSTGRES_DATABASE database..."
   pg_dump --format=custom \
         -h $POSTGRES_HOST \
@@ -60,14 +63,6 @@ if [ -z "$POSTGRES_DATABASE"]; then
         $PGDUMP_EXTRA_OPTS \
         > db.dump
   s3_uri_base="s3://${S3_BUCKET}/${S3_PREFIX}/${POSTGRES_DATABASE}_${timestamp}.dump"
-else
-  echo "Creating backup of all databases..."
-  pg_dumpall -h $POSTGRES_HOST \
-        -p $POSTGRES_PORT \
-        -U $POSTGRES_USER \
-        $PGDUMP_EXTRA_OPTS \
-        > db.dump
-  s3_uri_base="s3://${S3_BUCKET}/${S3_PREFIX}/${timestamp}.dump"
 fi
 
 timestamp=$(date +"%Y-%m-%dT%H:%M:%S")
