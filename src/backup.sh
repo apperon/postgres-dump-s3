@@ -3,6 +3,8 @@
 set -eu
 set -o pipefail
 
+timestamp=$(date +"%Y-%m-%dT%H:%M:%S")
+
 if [ -z "$S3_ACCESS_KEY_ID" ]; then
   echo "You need to set the S3_ACCESS_KEY_ID environment variable."
   exit 1
@@ -64,8 +66,6 @@ else
         > db.dump
   s3_uri_base="s3://${S3_BUCKET}/${S3_PREFIX}/${POSTGRES_DATABASE}_${timestamp}.dump"
 fi
-
-timestamp=$(date +"%Y-%m-%dT%H:%M:%S")
 
 if [ -n "$PASSPHRASE" ]; then
   echo "Encrypting backup..."
