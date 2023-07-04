@@ -50,7 +50,7 @@ export AWS_SECRET_ACCESS_KEY=$S3_SECRET_ACCESS_KEY
 export AWS_DEFAULT_REGION=$S3_REGION
 export PGPASSWORD=$POSTGRES_PASSWORD
 
-if [ -n "$POSTGRES_DATABASE"]; then
+if [ -z "$POSTGRES_DATABASE"]; then
   echo "Creating backup of $POSTGRES_DATABASE database..."
   pg_dump --format=custom \
         -h $POSTGRES_HOST \
