@@ -2,6 +2,8 @@ ARG ALPINE_VERSION
 FROM alpine:${ALPINE_VERSION}
 ARG TARGETARCH
 
+RUN apk add curl
+
 ADD src/install.sh install.sh
 RUN sh install.sh && rm install.sh
 
@@ -19,6 +21,7 @@ ENV S3_PATH 'backup'
 ENV S3_ENDPOINT ''
 ENV S3_S3V4 'no'
 ENV PASSPHRASE ''
+ENV HEARTBEAT_URL ''
 
 ADD src/run.sh run.sh
 ADD src/backup.sh backup.sh
